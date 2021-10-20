@@ -1,0 +1,10 @@
+{
+    "dev": {
+        "app_function": "login.app",
+        "aws_region": "us-east-2",
+        "profile_name": "flaskdeploy",
+        "project_name": "s3-handler-api",
+        "runtime": "python3.8",
+        "s3_bucket": "s3-handler-api-nfss"
+    }
+}

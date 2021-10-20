@@ -1,0 +1,7 @@
+mysql-connector
+boto3
+botocore.exceptions
+botocore.retries
+flask
+flask_jwt
+flask_cors
