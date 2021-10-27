@@ -1,0 +1,2 @@
+select f.file_id, f.file_key, f.name, f.description, f.created_at, f.modified_at, u.email, u.first_name, u.last_name, u.user_id from users_files uf left join files f  on f.file_id and  uf.file_id left join  users u on uf.user_id = u.user_id
+where f.file_key = "try13"
