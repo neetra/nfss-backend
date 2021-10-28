@@ -1,7 +1,6 @@
-mysql-connector
-boto3
-botocore.exceptions
-botocore.retries
-flask
-flask_jwt
-flask_cors
+mysql-connector==2.2.9
+boto3==1.18.64
+botocore==1.21.64
+flask==2.0.2
+flask_jwt==0.3.2
+flask_cors==3.0.10
