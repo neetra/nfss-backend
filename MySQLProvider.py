@@ -5,7 +5,7 @@ from Files import File
 from MySQLHelper import getFiles, getFilesWithUser, closeMysqlconnection
 from datetime import datetime
 import config
-from helper import get_time_from_string;
+from Helper import get_time_from_string;
 from werkzeug.security import generate_password_hash, check_password_hash
 from mysql.connector.cursor import MySQLCursorDict, MySQLCursorPrepared
 
@@ -18,6 +18,7 @@ class MySQLProvider():
     def getAllFiles(self):
         try:  
             nfss_db =mysql.connector.connect(host=config.db_host,user=config.db_username,password=config.db_password,database=config.db_database)#established connection between your database  
+            
             #Why set dictionary=True? because MySQLCursorDict creates a cursor that returns rows as dictionaries so we can access using column name (here column name is the key of the dictionary)
             my_cursor= nfss_db.cursor(dictionary = True)
 
@@ -60,6 +61,7 @@ class MySQLProvider():
             for result in my_cursor.stored_results():
                 a_files=  getFiles(result.fetchall())
                 allFiles = allFiles + a_files
+
             return(allFiles)  
         except mysql.connector.Error as err:  
             #rollback used for if any error   
@@ -70,8 +72,7 @@ class MySQLProvider():
     def add_entry_of_file(self, file : File, username)    :
         try:   
             nfss_db =mysql.connector.connect(host=config.db_host,user=config.db_username,password=config.db_password,database=config.db_database)#established connection between your database     
-            my_cursor=nfss_db.cursor()
-            #my_cursor.callproc('SP_PostFilesByUser', ( 'amrale.netra@gmail.com', 'try30','filename', 'description1',datetime.now(),  datetime.now()))
+            my_cursor=nfss_db.cursor()          
             
             my_cursor.callproc('SP_PostFilesByUser', ( username, file.file_key, file.file_name, file.file_description, get_time_from_string(file.created_at),  get_time_from_string(file.modified_at)))
             nfss_db.commit()          
@@ -113,21 +114,20 @@ class MySQLProvider():
         return None
 
     def get_sql_version(self):
-        try: 
-            print("##MYSQL1")
+        try:             
             nfss_db =mysql.connector.connect(host=config.db_host,user=config.db_username,password=config.db_password,database=config.db_database,connect_timeout=10000 )#established connection between your database   
-            print("##MYSQL-2")
+            
             my_cursor = nfss_db.cursor(dictionary = True)
-            print("##MYSQL-3")
+            
             query = "SELECT version()"
         
-            print("##MYSQL-4")
+            
             my_cursor.execute(query)
-            print("##MYSQL-5")
+            
             results = my_cursor.fetchone()
             if(results is None):
                 return None
-            print(results["version()"])                
+                         
             return results["version()"]               
         except mysql.connector.Error as err:
             print (err)     
@@ -159,9 +159,9 @@ class MySQLProvider():
 
     def create_user(self, user_l):
         try:      
-            print("##create user#")
+            
             nfss_db =mysql.connector.connect(host=config.db_host,user=config.db_username,password=config.db_password,database=config.db_database)#established connection between your database   
-            print("##create user# 2")
+            
             my_cursor=nfss_db.cursor()    
             hash_password = generate_password_hash(user_l["password"])    
             my_cursor.callproc('SP_AddNewUser', (user_l['email'],  user_l['first_name'], user_l['last_name'], hash_password))       

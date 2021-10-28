@@ -11,8 +11,11 @@ import os, sys;
 from flask_cors import CORS
 import os, tempfile, zipfile
 
+# Initialize mysql and s3 handlers
 mysqlprovider = MySQLProvider()
 s3_handler = S3Handler()
+
+# User Object for JWT authentication
 class User(object):
     def __init__(self, user_id, email, first_name, last_name, role_id =2):
         self.user_id = user_id
@@ -23,6 +26,8 @@ class User(object):
     def __str__(self):
         return "User(id='%s')" % self.id
 
+
+# Customize payload operation to encode role of the user.
 def make_payload(identity):  
     iat = datetime.utcnow()
     exp = iat + current_app.config.get('JWT_EXPIRATION_DELTA')
@@ -46,21 +51,27 @@ def authenticate(username, password):
                 
     return User(user['user_id'], user['email'], user['first_name'], user['last_name'], user['role_id'])
 
+# This is called when jwt-required
 def identity(payload):
     user_id = payload['user_id']
     user = mysqlprovider.get_user_by_username_or_id("", user_id)
     if (user is None):
-        return None   
+        return None  
 
     return user          
 
+# Initialise Flask APP
 app = Flask(__name__)
-
 app.config['SECRET_KEY'] = token_urlsafe(16)  
+
+# Enable CORS to all origins 
 cors = CORS(app)
+
+# JWT initialization
 jwt = JWT(app, authenticate, identity)
 jwt.jwt_payload_callback = make_payload
 
+# Sign up new user 
 @app.route('/create-user',  methods = ["POST"])
 def create_user():
      print("create a user")
@@ -97,10 +108,12 @@ def getTokenFromAuthorizationHeader():
     except:
         return "Error while parsing token"        
 
+# create, edit new file , upload functionality
 @app.route("/createfile", methods = ["POST"])
 @jwt_required()
 def create_a_file():  
-    try:        
+    try:   
+        # Lambda function has read-only access only temp directory     
         with tempfile.TemporaryDirectory() as tmpdir:
             print(tmpdir)
         token = request.headers["Authorization"]
@@ -116,6 +129,7 @@ def create_a_file():
     except Error as err:
         return {"message":err.message},400       
 
+# Delete the file
 @app.route("/file/<file_key>", methods = ["DELETE"])
 @jwt_required()
 def delete_a_file(file_key):
@@ -129,6 +143,7 @@ def delete_a_file(file_key):
     except Error as err:
         return {"message":err.message},400    
 
+# Get files , different metadata as per the user role
 @app.route("/files")
 @jwt_required()
 def getFilesByUser():
